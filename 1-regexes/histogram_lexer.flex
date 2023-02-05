@@ -8,7 +8,8 @@
 /* Bring in our declarations for token types and
    the yylval variable. */
 #include "histogram.hpp"
-
+#include <iostream>
+#include <string.h>
 
 // This is to work around an irritating bug in Flex
 // https://stackoverflow.com/questions/46213840/get-rid-of-warning-implicit-declaration-of-function-fileno-in-flex
@@ -20,13 +21,45 @@ extern "C" int fileno(FILE *stream);
 
 %%
 
-[0-9]+          { fprintf(stderr, "Number : %s\n", yytext); /* TODO: get value out of yytext and into yylval.numberValue */;  return Number; }
+-?[0-9]+[\.[0-9]+]         { fprintf(stderr, "Number : %s\n", yytext); /* TODO: get value out of yytext and into yylval.numberValue */
+                             double numVal;
+                             numVal = stod(yytext);
+                             numVal = round_to(fractionVal, 0.001); //set to 3 decimal places
+                             Number = to_string(numVal);
 
-[a-z]+          { fprintf(stderr, "Word : %s\n", yytext); /* TODO: get value out of yytext and into yylval.wordValue */;  return Word; }
+                              ;  return Number; }
+
+-?[0-9]+/-?[0-9]+          { fprintf(stderr, "Number : %s\n", yytext); /* TODO: get value out of yytext and into yylval.numberValue */
+                              double numerator;
+                              double denominator;
+                              double fractionVal;
+                              bool foundFraction = false;
+                              int i = 0;
+                              while(!foundFraction){
+                                 if (yytext(i) == "/"){
+                                    numerator = stod(yytext.substr (0,i));
+                                    denominator = stod(yytext.substr ((i+1),(len(yytext) - (i+1))))
+                                    foundFraction = true
+                                 }
+                                 i++;
+                              }
+                              fractionVal = numerator/denominator;
+                              fractionVal = round_to(fractionVal, 0.001);
+                              Number = to_string(fractionVal)
+
+                              ;  return Number; }
+
+
+
+[a-zA-Z]+          { fprintf(stderr, "Word : %s\n", yytext); /* TODO: get value out of yytext and into yylval.wordValue */
+                                 Word = yytext;
+                              ;  return Word; }
 
 \n              { fprintf(stderr, "Newline\n"); }
 
+[ ]              { fprintf(stderr, "Space\n"); }
 
+\[.*\]
 %%
 
 /* Error handler. This will get called if none of the rules match. */
