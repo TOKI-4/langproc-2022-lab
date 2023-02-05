@@ -55,11 +55,17 @@ extern "C" int fileno(FILE *stream);
                                  Word = yytext;
                               ;  return Word; }
 
+\[.*\]            { fprintf(stderr, "Word : %s\n", yytext); /* TODO: get value out of yytext and into yylval.wordValue */
+                                 std::string bracketString;
+                                 bracketString = yytext.substr(1, (len(yytext) - 2)) //we minus 2 to get rid of the brackets
+                                 Word = bracketString
+                              ;  return Word; }
+
 \n              { fprintf(stderr, "Newline\n"); }
 
 [ ]              { fprintf(stderr, "Space\n"); }
 
-\[.*\]
+
 %%
 
 /* Error handler. This will get called if none of the rules match. */
