@@ -23,13 +23,13 @@ extern "C" int fileno(FILE *stream);
 
 %%
 
--?[0-9]+[.]?[0-9]*        { fprintf(stderr, "Number : %s\n", yytext); /* TODO: get value out of yytext and into yylval.numberValue */
+-?[0-9]+(\.[0-9]*)?        { fprintf(stderr, "Number : %s\n", yytext); /* TODO: get value out of yytext and into yylval.numberValue */
                               double numVal;
                               numVal = std::stod(yytext);
                               yylval.numberValue = numVal;
                               return Number; }
 
--?[0-9]+[\/]-?[0-9]+          { fprintf(stderr, "Number : %s\n", yytext); /* TODO: get value out of yytext and into yylval.numberValue */
+-?[0-9]+[\/][0-9]+          { fprintf(stderr, "Number : %s\n", yytext); /* TODO: get value out of yytext and into yylval.numberValue */
                               double numerator;
                               double denominator;
                               double fractionVal;
