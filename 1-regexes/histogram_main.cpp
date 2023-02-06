@@ -1,11 +1,11 @@
 #include "histogram.hpp"
-
 #include <vector>
 #include <unordered_map>
 #include <algorithm>
 #include <cassert>
 #include <iostream>
 #include <iomanip>
+#include <cmath>
 
 // Use a hash-table to maintain a word -> count mapping.
 // This deliberately uses std::unordered_map rather than std::map,
@@ -32,8 +32,7 @@ int main()
         }else if(type==Number){
             // We have a number. The value will be
             // in yylval.numberValue
-
-            // TODO: add to sum
+            sum = sum + yylval.numberValue;
             
         }else if(type==Word){
             // We have a string. The value is in a string
@@ -44,6 +43,12 @@ int main()
             // TODO: add yylval.wordValue to histogram
 
             // TODO: Free the pointer yylval.wordValue to stop leaks
+            
+            
+            histogram[std::string(*yylval.wordValue)]++;
+
+            free(yylval.wordValue);
+
         }else{
             assert(0); // There are only three token types.
             return 1;
@@ -52,7 +57,10 @@ int main()
 
 
     // TODO: print out `sum` to std::cout with three decimal digits
-    
+    std::cout << std::fixed;
+    std::cout << std::setprecision(3);
+    std::cout << sum << std::endl;
+
 
     // Build a vector of (word,count) entries based on the hash-table
     std::vector<std::pair<std::string,unsigned> > sorted(histogram.begin(), histogram.end());
@@ -74,7 +82,7 @@ int main()
         std::string name=it->first;
         unsigned count=it->second;
         // TODO: Print out `name` and `count` to std::cout
-        
+        std::cout << "[" << name << "]" << " " << count << std::endl;
         
         ++it;
     }

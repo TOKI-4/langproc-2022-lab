@@ -7,9 +7,11 @@
 
 /* Bring in our declarations for token types and
    the yylval variable. */
+
 #include "histogram.hpp"
 #include <iostream>
 #include <string.h>
+#include <cmath>
 
 // This is to work around an irritating bug in Flex
 // https://stackoverflow.com/questions/46213840/get-rid-of-warning-implicit-declaration-of-function-fileno-in-flex
@@ -21,49 +23,50 @@ extern "C" int fileno(FILE *stream);
 
 %%
 
--?[0-9]+[\.[0-9]+]         { fprintf(stderr, "Number : %s\n", yytext); /* TODO: get value out of yytext and into yylval.numberValue */
-                             double numVal;
-                             numVal = stod(yytext);
-                             numVal = round_to(fractionVal, 0.001); //set to 3 decimal places
-                             Number = to_string(numVal);
+-?[0-9]+[.]?[0-9]*        { fprintf(stderr, "Number : %s\n", yytext); /* TODO: get value out of yytext and into yylval.numberValue */
+                              double numVal;
+                              numVal = std::stod(yytext);
+                              yylval.numberValue = numVal;
+                              return Number; }
 
-                              ;  return Number; }
-
--?[0-9]+/-?[0-9]+          { fprintf(stderr, "Number : %s\n", yytext); /* TODO: get value out of yytext and into yylval.numberValue */
+-?[0-9]+[\/]-?[0-9]+          { fprintf(stderr, "Number : %s\n", yytext); /* TODO: get value out of yytext and into yylval.numberValue */
                               double numerator;
                               double denominator;
                               double fractionVal;
                               bool foundFraction = false;
                               int i = 0;
+                              std::string str(yytext);
                               while(!foundFraction){
-                                 if (yytext(i) == "/"){
-                                    numerator = stod(yytext.substr (0,i));
-                                    denominator = stod(yytext.substr ((i+1),(len(yytext) - (i+1))))
-                                    foundFraction = true
+                                 if (str[i] == '/'){
+                                    numerator = std::stod(str.substr (0,i));
+                                    denominator = std::stod(str.substr ((i+1),(str.length() - (i+1))));
+                                    foundFraction = true;
                                  }
                                  i++;
                               }
                               fractionVal = numerator/denominator;
-                              fractionVal = round_to(fractionVal, 0.001);
-                              Number = to_string(fractionVal)
+                              
+                              yylval.numberValue = fractionVal
 
                               ;  return Number; }
 
 
 
 [a-zA-Z]+          { fprintf(stderr, "Word : %s\n", yytext); /* TODO: get value out of yytext and into yylval.wordValue */
-                                 Word = yytext;
-                              ;  return Word; }
+                                 
+                                 yylval.wordValue = new std::string (yytext);
+                                return Word; }
 
-\[.*\]            { fprintf(stderr, "Word : %s\n", yytext); /* TODO: get value out of yytext and into yylval.wordValue */
+\[([^\]]*)\]            { fprintf(stderr, "Word : %s\n", yytext); /* TODO: get value out of yytext and into yylval.wordValue */
                                  std::string bracketString;
-                                 bracketString = yytext.substr(1, (len(yytext) - 2)) //we minus 2 to get rid of the brackets
-                                 Word = bracketString
+                                 std::string str(yytext);
+                                 bracketString = str.substr(1, (str.length() - 2)); 
+                                 yylval.wordValue = new std::string(bracketString)
                               ;  return Word; }
 
-\n              { fprintf(stderr, "Newline\n"); }
+.|\n              { fprintf(stderr, "Newline\n"); }
 
-[ ]              { fprintf(stderr, "Space\n"); }
+[ \t]              { fprintf(stderr, "Space\n"); }
 
 
 %%
